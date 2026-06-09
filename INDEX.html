@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrthoQuiz — Orthodontics & Growth Exam Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d12;
+    --surface: #131720;
+    --surface2: #1a2030;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e4e8f0;
+    --muted: #6b7592;
+    --accent: #7c6af7;
+    --accent2: #5e9cf5;
+    --accent-glow: rgba(124,106,247,0.12);
+    --green: #3ecf8e;
+    --green-bg: rgba(62,207,142,0.07);
+    --green-border: rgba(62,207,142,0.28);
+    --red: #f56565;
+    --red-bg: rgba(245,101,101,0.07);
+    --red-border: rgba(245,101,101,0.28);
+    --amber: #f6ad55;
+    --amber-bg: rgba(246,173,85,0.07);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.08);
+    --teal: #38bdf8;
+    --teal-bg: rgba(56,189,248,0.07);
+    --pink: #f472b6;
+    --pink-bg: rgba(244,114,182,0.07);
+    --indigo: #818cf8;
+    --indigo-bg: rgba(129,140,248,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124,106,247,0.07), transparent),
+      linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 100% 100%, 44px 44px, 44px 44px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: 740px; margin: 0 auto; padding: 2rem 1.25rem 6rem; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2.5rem; padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--text); letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+  .badge-mode {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 20px;
+    background: var(--surface2); color: var(--muted); border: 1px solid var(--border);
+  }
+
+  /* HOME */
+  .home-hero { text-align: center; padding: 2.5rem 0 2rem; }
+  .home-hero h1 {
+    font-family: 'DM Serif Display', serif; font-size: 2.6rem;
+    line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 0.75rem;
+  }
+  .home-hero h1 em { color: var(--accent); font-style: italic; }
+  .home-hero p { color: var(--muted); font-size: 0.95rem; max-width: 460px; margin: 0 auto 2rem; line-height: 1.7; }
+
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 1.5rem; }
+
+  .mode-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.2rem; cursor: pointer; text-align: left;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    position: relative; overflow: hidden;
+  }
+  .mode-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0;
+    height: 2px; opacity: 0; transition: opacity 0.2s;
+  }
+  .mode-card:hover { border-color: var(--border2); background: var(--surface2); transform: translateY(-2px); }
+  .mode-card:hover::before { opacity: 1; }
+  .mode-card.all::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .mode-card.wrong::before { background: linear-gradient(90deg, var(--red), var(--amber)); }
+  .mode-card.growth::before { background: linear-gradient(90deg, var(--green), var(--teal)); }
+  .mode-card.dentition::before { background: linear-gradient(90deg, var(--teal), var(--accent2)); }
+  .mode-card.orthodontic::before { background: linear-gradient(90deg, var(--purple), var(--accent)); }
+  .mode-card.biomech::before { background: linear-gradient(90deg, var(--amber), var(--pink)); }
+  .mode-card.appliances::before { background: linear-gradient(90deg, var(--pink), var(--purple)); }
+  .mode-card.retention::before { background: linear-gradient(90deg, var(--indigo), var(--teal)); }
+  .mode-card.savant::before { background: linear-gradient(90deg, #f472b6, #a78bfa, #5e9cf5); }
+
+  .mode-card.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+  .mode-icon { font-size: 1.4rem; margin-bottom: 0.45rem; display: block; }
+  .mode-card h3 { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+  .mode-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+  .mode-card .count {
+    position: absolute; top: 0.9rem; right: 0.9rem;
+    font-size: 10px; color: var(--muted); background: var(--surface2);
+    padding: 2px 7px; border-radius: 10px; border: 1px solid var(--border);
+  }
+
+  .mode-card.savant {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(124,106,247,0.06), rgba(94,156,245,0.06));
+    border-color: rgba(124,106,247,0.18);
+  }
+  .mode-card.savant:hover { border-color: rgba(124,106,247,0.35); background: linear-gradient(135deg, rgba(124,106,247,0.1), rgba(94,156,245,0.1)); }
+
+  /* STATS */
+  .stats-row { display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .stat-pill {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 14px; font-size: 13px; color: var(--muted);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .stat-pill strong { color: var(--text); font-weight: 600; }
+  .stat-pill.green strong { color: var(--green); }
+  .stat-pill.red strong { color: var(--red); }
+
+  /* PROGRESS */
+  .progress-track {
+    height: 3px; background: var(--surface2); border-radius: 2px;
+    margin-bottom: 1.5rem; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* QUESTION CARD */
+  .q-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.75rem; margin-bottom: 1rem;
+    animation: fadeUp 0.3s ease;
+  }
+  .q-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
+  .q-cat-tag {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+  }
+  .tag-Growth { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .tag-Dentition { background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(56,189,248,0.3); }
+  .tag-Orthodontics { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+  .tag-Biomechanics { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(246,173,85,0.3); }
+  .tag-Appliances { background: var(--pink-bg); color: var(--pink); border: 1px solid rgba(244,114,182,0.3); }
+  .tag-Retention { background: var(--indigo-bg); color: var(--indigo); border: 1px solid rgba(129,140,248,0.3); }
+
+  .q-num { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .q-text { font-size: 1.02rem; line-height: 1.65; color: var(--text); font-weight: 400; margin-bottom: 1.4rem; }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 9px; }
+  .opt-btn {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 13px 16px;
+    font-size: 0.875rem; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; text-align: left; color: var(--text); line-height: 1.5;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s; width: 100%;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-glow); transform: translateX(3px); }
+  .opt-btn:disabled { cursor: default; }
+  .opt-letter {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; margin-top: 1px;
+  }
+  .opt-btn.correct { background: var(--green-bg); border-color: var(--green); }
+  .opt-btn.correct .opt-letter { background: var(--green); border-color: var(--green); color: #0d1f16; }
+  .opt-btn.wrong { background: var(--red-bg); border-color: var(--red); }
+  .opt-btn.wrong .opt-letter { background: var(--red); border-color: var(--red); color: #1f0d0d; }
+  .opt-btn.reveal { background: var(--green-bg); border-color: var(--green-border); }
+  .opt-btn.reveal .opt-letter { background: rgba(62,207,142,0.2); border-color: var(--green); color: var(--green); }
+
+  /* FEEDBACK */
+  .feedback-box {
+    border-radius: 10px; padding: 12px 16px; font-size: 13.5px;
+    margin-top: 12px; display: flex; align-items: center; gap: 10px;
+  }
+  .feedback-box.correct { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .feedback-box.wrong { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+  .fb-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+  /* BUTTONS */
+  .actions { display: flex; gap: 10px; margin-top: 1.25rem; flex-wrap: wrap; }
+  .btn {
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
+    padding: 10px 20px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface2); color: var(--text); cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.01em;
+  }
+  .btn:hover { background: var(--surface); border-color: var(--border2); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { background: #6a58e8; border-color: #6a58e8; }
+  .btn.danger { color: var(--red); border-color: rgba(245,101,101,0.3); }
+  .btn.danger:hover { background: var(--red-bg); border-color: var(--red); }
+  .btn.ghost { background: transparent; color: var(--muted); }
+  .btn.ghost:hover { color: var(--text); background: var(--surface2); }
+
+  /* SUMMARY */
+  .score-big { font-family: 'DM Serif Display', serif; font-size: 5rem; line-height: 1; letter-spacing: -0.03em; }
+  .score-big.good { color: var(--green); }
+  .score-big.mid { color: var(--amber); }
+  .score-big.low { color: var(--red); }
+  .score-sub { font-size: 1rem; color: var(--muted); margin-top: 0.5rem; }
+
+  .summary-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 1.5rem 0; }
+  .sum-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem; text-align: center;
+  }
+  .sum-stat .num { font-size: 1.8rem; font-weight: 600; font-family: 'DM Serif Display', serif; }
+  .sum-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sum-stat.green .num { color: var(--green); }
+  .sum-stat.red .num { color: var(--red); }
+  .sum-stat.blue .num { color: var(--accent); }
+
+  .summary-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 1.5rem; }
+  .summary-actions .btn { text-align: center; padding: 14px; font-size: 14px; }
+
+  /* WRONG LIST */
+  .wrong-list { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 1rem; }
+  .wrong-list-header { padding: 12px 16px; font-size: 11px; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; }
+  .wrong-item { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .wrong-item:last-child { border-bottom: none; }
+  .wrong-item .wi-q { color: var(--muted); margin-bottom: 4px; line-height: 1.5; }
+  .wrong-item .wi-a { color: var(--green); font-size: 12px; }
+
+  /* SAVANT */
+  .savant-header { text-align: center; padding: 2rem 0 1.5rem; }
+  .savant-header h2 {
+    font-family: 'DM Serif Display', serif; font-size: 2rem;
+    background: linear-gradient(135deg, #f472b6, #a78bfa, #5e9cf5);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .savant-header p { color: var(--muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto; }
+
+  .savant-config { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.25rem; }
+  .savant-config label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .savant-config select {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 1rem;
+    transition: border-color 0.15s;
+  }
+  .savant-config select:focus { border-color: var(--accent); }
+  .savant-config select option { background: #1a2030; }
+
+  .savant-chat { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 1rem; }
+  .chat-msgs { min-height: 220px; max-height: 460px; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 88%; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.6; animation: fadeUp 0.25s ease; }
+  .msg.ai { background: var(--surface2); border: 1px solid var(--border); color: var(--text); align-self: flex-start; border-radius: 4px 12px 12px 12px; }
+  .msg.user { background: var(--accent); color: #fff; align-self: flex-end; border-radius: 12px 4px 12px 12px; }
+  .msg.system { background: var(--purple-bg); border: 1px solid rgba(167,139,250,0.2); color: var(--purple); font-size: 12px; padding: 8px 14px; align-self: center; border-radius: 20px; max-width: 100%; text-align: center; }
+  .typing-indicator { display: flex; gap: 4px; padding: 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; align-self: flex-start; width: fit-content; }
+  .typing-dot { width: 6px; height: 6px; background: var(--muted); border-radius: 50%; animation: blink 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  .chat-input-row { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); }
+  .chat-input {
+    flex: 1; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--muted); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
+
+  @media (max-width: 480px) {
+    .mode-grid { grid-template-columns: 1fr; }
+    .home-hero h1 { font-size: 2rem; }
+    .score-big { font-size: 3.5rem; }
+    .summary-stats { grid-template-columns: 1fr 1fr; }
+    .summary-stats .sum-stat:last-child { grid-column: 1/-1; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="app-header">
+    <div class="logo">Ortho<span>Quiz</span></div>
+    <div class="badge-mode" id="mode-badge">Home</div>
+  </header>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="home-hero">
+      <h1>Master your<br><em>orthodontics</em> exams</h1>
+      <p>240+ MCQs covering Growth & Development, Dentition, Occlusion, Biomechanics, Appliances, and Retention — from Dr. Haidar Fadhil, University of Turath.</p>
+    </div>
+    <div class="mode-grid" id="mode-grid">
+      <div class="mode-card all" onclick="startMode('all')">
+        <span class="mode-icon">🎯</span>
+        <h3>All Topics</h3>
+        <p>Complete mixed-topic session</p>
+        <span class="count" id="cnt-all">— Q</span>
+      </div>
+      <div class="mode-card wrong disabled" id="wrong-card" onclick="startMode('wrong')">
+        <span class="mode-icon">🔁</span>
+        <h3>Retry Wrong</h3>
+        <p>Only questions you missed</p>
+        <span class="count" id="cnt-wrong">0 Q</span>
+      </div>
+      <div class="mode-card growth" onclick="startMode('Growth')">
+        <span class="mode-icon">🧬</span>
+        <h3>Growth & Development</h3>
+        <p>Skull, facial growth, clefts, embryology</p>
+        <span class="count" id="cnt-Growth">— Q</span>
+      </div>
+      <div class="mode-card dentition" onclick="startMode('Dentition')">
+        <span class="mode-icon">🦷</span>
+        <h3>Dentition & Occlusion</h3>
+        <p>Eruption, leeway, Spee, overbite, overjet</p>
+        <span class="count" id="cnt-Dentition">— Q</span>
+      </div>
+      <div class="mode-card orthodontic" onclick="startMode('Orthodontics')">
+        <span class="mode-icon">📐</span>
+        <h3>Orthodontic Principles</h3>
+        <p>Malocclusion, tooth movement types, planning</p>
+        <span class="count" id="cnt-Orthodontics">— Q</span>
+      </div>
+      <div class="mode-card biomech" onclick="startMode('Biomechanics')">
+        <span class="mode-icon">⚙️</span>
+        <h3>Biomechanics & Forces</h3>
+        <p>Anchorage, moments, center of resistance</p>
+        <span class="count" id="cnt-Biomechanics">— Q</span>
+      </div>
+      <div class="mode-card appliances" onclick="startMode('Appliances')">
+        <span class="mode-icon">🔧</span>
+        <h3>Appliances</h3>
+        <p>ROA, fixed, functional, headgear, springs</p>
+        <span class="count" id="cnt-Appliances">— Q</span>
+      </div>
+      <div class="mode-card retention" onclick="startMode('Retention')">
+        <span class="mode-icon">🔒</span>
+        <h3>Retention & Relapse</h3>
+        <p>Retainers, pericision, stability factors</p>
+        <span class="count" id="cnt-Retention">— Q</span>
+      </div>
+      <div class="mode-card savant" onclick="showSavant()">
+        <span class="mode-icon">✨</span>
+        <h3>Savant AI Tutor</h3>
+        <p>Conversational AI that quizzes you, explains the <em>why</em> behind every answer, and adapts to your weak spots</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz" style="display:none"></div>
+
+  <!-- SUMMARY -->
+  <div id="summary" style="display:none"></div>
+
+  <!-- SAVANT -->
+  <div id="savant-screen" style="display:none">
+    <div class="savant-header">
+      <h2>Savant AI Tutor</h2>
+      <p>Conversational AI that quizzes you and explains each answer with clinical reasoning</p>
+    </div>
+    <div class="savant-config" id="savant-config">
+      <label>Choose topic focus</label>
+      <select id="sav-topic">
+        <option value="all">All topics (mixed)</option>
+        <option value="Growth">Growth & Development</option>
+        <option value="Dentition">Dentition & Occlusion</option>
+        <option value="Orthodontics">Orthodontic Principles</option>
+        <option value="Biomechanics">Biomechanics & Forces</option>
+        <option value="Appliances">Appliances</option>
+        <option value="Retention">Retention & Relapse</option>
+      </select>
+      <label>Number of questions</label>
+      <select id="sav-count">
+        <option value="5">5 questions (quick drill)</option>
+        <option value="10" selected>10 questions</option>
+        <option value="15">15 questions</option>
+        <option value="20">20 questions (full exam)</option>
+      </select>
+      <button class="btn primary" onclick="startSavant()" style="width:100%;padding:14px;font-size:14px">Start AI Session ✨</button>
+    </div>
+    <div class="savant-chat" id="savant-chat" style="display:none">
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chat-input" placeholder="Type your answer (A/B/C/D) or ask a question..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn primary" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+    <button class="btn ghost" onclick="showHome()" style="margin-top:10px">← Back to home</button>
+  </div>
+</div>
+
+<script>
+const ALL_Q = [
+// ── GROWTH & DEVELOPMENT ──
+{q:"In intrauterine life, the period of the ovum extends from:",opts:["Time of fertilization to the end of 2nd week","Time of fertilization to the end of 2nd month","End of 2nd week to the end of 2nd month","Time of fertilization to the beginning of 2nd month"],ans:0,cat:"Growth"},
+{q:"At birth, the base of the skull that is in three parts is:",opts:["The occipital bone","The sphenoid bone","The temporal bone","The frontal bone"],ans:1,cat:"Growth"},
+{q:"Development of the tuberosity is part of:",opts:["Transverse growth","Vertical growth","Downward growth","Antero-posterior growth"],ans:3,cat:"Growth"},
+{q:"In complete bilateral clefts of the lip, alveolus and palate, the maxillary arch typically collapses in:",opts:["The vertical direction","The antero-posterior direction","The transverse direction","The sagittal direction"],ans:2,cat:"Growth"},
+{q:"Growth takes place:",opts:["In prenatal life only","In postnatal life only","Equally in pre and postnatal life","Less in pre than post natal life"],ans:3,cat:"Growth"},
+{q:"At birth the head forms about what proportion of total body height?",opts:["1/2","1/3","1/4","1/6"],ans:2,cat:"Growth"},
+{q:"Which bone is of membranous origin but has secondary cartilages that develop in it?",opts:["Maxilla","Frontal","Mandible","Hyoid"],ans:2,cat:"Growth"},
+{q:"Treatment of cleft lip and palate must be started after birth:",opts:["As soon as possible","1 month","3 months","6 months"],ans:0,cat:"Growth"},
+{q:"By the 2nd month, which facial development occurs?",opts:["Eyes reach final position","Facial structures are apparent, nose prominent, nasal septum elongates, eyes migrate toward midline, ears develop","Palate fuses completely","Mandible achieves adult size"],ans:1,cat:"Growth"},
+{q:"At birth, which bones are in two parts separated in the mid-sagittal plane?",opts:["The frontal bone and the mandible","The occipital and mandible","The frontal and temporal","The parietal and temporal"],ans:0,cat:"Growth"},
+{q:"Transversal growth takes place by apposition of bone at:",opts:["The tempro-zygomatic suture","The maxillo-zygomatic suture","The pterygo-palatine suture","The sagittal sutures"],ans:3,cat:"Growth"},
+{q:"The line of fusion represented by the philtrum on the upper lip is the fusion of:",opts:["The two lateral nasal processes","The two medial maxillary processes","The two medial nasal processes","The two lateral maxillary processes"],ans:2,cat:"Growth"},
+{q:"Roughly the facial growth rate follows the same pattern as:",opts:["The soft tissue growth","The growth of cranium","The growth of nervous system","The rate of body growth"],ans:3,cat:"Growth"},
+{q:"In vertical growth of the nasomaxillary complex, resorption on the nasal aspect and apposition on the oral aspect of palate will bring the palate:",opts:["Transversely","Downward","Backward","Forward"],ans:1,cat:"Growth"},
+{q:"According to severity of cleft palate, cleft of the secondary palate is considered:",opts:["Class I","Class II","Class III","Class IV"],ans:1,cat:"Growth"},
+{q:"The body of the tongue develops from:",opts:["The hypobrachial eminence","The first pharyngeal arch","The second pharyngeal arch","The copula"],ans:1,cat:"Growth"},
+{q:"Endosteal resorption and addition of bone from within the cancellous spaces is necessary to maintain:",opts:["The appropriate thickness of the cortical layer of bone","The width of the cancellous bone space","The direction of bone growth","The speed of bone growth"],ans:0,cat:"Growth"},
+{q:"The ramus participates in antero-posterior growth of the mandible by:",opts:["Resorption on its posterior border and apposition on its anterior border","Apposition on its anterior border and resorption on its posterior border","Apposition on its superior border and resorption on its inferior border","Apposition on its posterior border and resorption on its anterior border"],ans:3,cat:"Growth"},
+{q:"First permanent molars erupt guided primarily by:",opts:["Maxillary canine inclination","Alveolar bone thickness","Distal surface of second primary molars","Growth of mandibular symphysis"],ans:2,cat:"Growth"},
+{q:"Secondary palate arises from:",opts:["Paired medial palatine shelves of the maxilla","Paired lateral palatine shelves of the maxilla","Paired lateral process of the mandible","Paired lateral nasal processes"],ans:1,cat:"Growth"},
+{q:"Growth at the head of the mandibular condyle would increase:",opts:["Total length of the mandible","Total height of the mandible","Total length and height of the mandible","Total length of the ramus"],ans:2,cat:"Growth"},
+{q:"After the first year of postnatal life, which structure no longer plays a role in transverse growth of the mandible?",opts:["Symphyseal cartilage","Meckel's cartilage","Condylar cartilage","Alar cartilage"],ans:0,cat:"Growth"},
+{q:"The copula disappears without contributing to the formation of:",opts:["The tongue","The palate","The lips","The floor of mouth"],ans:0,cat:"Growth"},
+{q:"During differential mandibular growth, the mandible grows:",opts:["Less than the maxilla","More forward than the maxilla","Only vertically","Only transversely"],ans:1,cat:"Growth"},
+
+// ── DENTITION & OCCLUSION ──
+{q:"Which primary molar relationship normally produces an end-on molar relation in early permanent dentition?",opts:["Severe mesial step","Distal step","Flush terminal plane","Canine class II"],ans:2,cat:"Dentition"},
+{q:"The intertransitional period is characterized by:",opts:["Rapid eruption of canines","Replacement of primary molars","Minimal changes in occlusion","Development of second permanent molars"],ans:2,cat:"Dentition"},
+{q:"Leeway space in the mandible is approximately:",opts:["0.9 mm total","1.8 mm total","3.4 mm total","2.2 mm total"],ans:2,cat:"Dentition"},
+{q:"The term teeth angulation refers to:",opts:["The long axis of the entire tooth","The mesiodistal tip of the crown","The inclination of the root","The buccolingual tilt"],ans:1,cat:"Dentition"},
+{q:"The first indication of tooth formation appears around:",opts:["3rd week of gestation","5th week of gestation","6th week of gestation","8th week of gestation"],ans:2,cat:"Dentition"},
+{q:"A mesial step terminal plane commonly leads to which permanent molar relationship?",opts:["Class II","Class III in all cases","Class I","End-on"],ans:2,cat:"Dentition"},
+{q:"A distal step terminal plane most often results in:",opts:["Class I","Self-correcting occlusion","Class II molar relationship","Class III due to mandibular overgrowth"],ans:2,cat:"Dentition"},
+{q:"Which of the following occurs during the intertransitional period?",opts:["Canine eruption","Premolar eruption","Significant arch length loss","Occlusal and interproximal wear flattening the occlusal surface"],ans:3,cat:"Dentition"},
+{q:"Which mechanism explains midline diastema in the Ugly Duckling stage?",opts:["Lateral incisor crowns drift mesially","Canine crowns press on lateral incisor roots","Premolar eruption rotates incisors","Maxillary sutural expansion widens the midline"],ans:1,cat:"Dentition"},
+{q:"The second transitional period typically begins with exfoliation of:",opts:["Maxillary primary lateral incisor","Mandibular primary molar","Mandibular primary canine","Maxillary primary central incisor"],ans:2,cat:"Dentition"},
+{q:"Premature eruption of second permanent molars before premolars may lead to:",opts:["Increased overbite","Decreased overjet","Shortening of arch perimeter","Posterior open bite"],ans:2,cat:"Dentition"},
+{q:"In maxillary incisors, the incisal portion of the labial surface is:",opts:["Lingual to the gingival portion","Buccal to the gingival portion","Parallel to the gingival portion","More distal than the gingival portion"],ans:1,cat:"Dentition"},
+{q:"The dental lamina develops from:",opts:["Dental papilla","Oral ectoderm","Mesenchyme","Neural tube"],ans:1,cat:"Dentition"},
+{q:"Mandibular permanent canines erupt at approximately:",opts:["6–7 years","8–9 years","10 years","12 years"],ans:2,cat:"Dentition"},
+{q:"In the mandible, canines typically erupt:",opts:["After premolars","Before premolars","At the same time as premolars","Before incisors"],ans:1,cat:"Dentition"},
+{q:"Ideal occlusion means:",opts:["Theoretically perfect arrangement","Common natural condition","Deep bite presence","Crossbite condition"],ans:0,cat:"Dentition"},
+{q:"Rotated molars occupy:",opts:["Less space than normal","More space than normal","Equal space","Space depending on arch form"],ans:1,cat:"Dentition"},
+{q:"The enamel organ gives rise to:",opts:["Enamel","Dentin","Pulp","Cementum"],ans:0,cat:"Dentition"},
+{q:"The permanent molars develop from:",opts:["Successional lamina","Primary dental lamina","Distal extension of dental lamina","Enamel organ"],ans:2,cat:"Dentition"},
+{q:"Early mesial shift relies mainly on:",opts:["Space created by second molars","Physiologic and primate spaces","Mandibular growth rotation","Distal step correction"],ans:1,cat:"Dentition"},
+{q:"Maxillary permanent canines erupt typically at:",opts:["8–9 years","9–10 years","10–11 years","12–13 years"],ans:3,cat:"Dentition"},
+{q:"The Curve of Spee refers to the curvature observed in the:",opts:["Maxillary arch buccolingually","Mandibular arch anteroposteriorly","Maxillary arch anteroposteriorly","Mandibular arch buccolingually"],ans:1,cat:"Dentition"},
+{q:"Overjet measures:",opts:["Vertical overlap","Horizontal overlap","Arch width","Facial height"],ans:1,cat:"Dentition"},
+{q:"According to Andrews, contact points between teeth should be:",opts:["Loose","Overlapping","Tight without spaces","Separated by 1 mm"],ans:2,cat:"Dentition"},
+{q:"The gum pad stage extends from:",opts:["Birth to 3 months","Birth to 6 months","6 months to 2 years","2 to 6 years"],ans:1,cat:"Dentition"},
+{q:"Late mesial shift occurs due to utilization of:",opts:["Interdental spacing","Leeway space after exfoliation of primary molars","Increased intercanine width","Cone funnel mechanism"],ans:1,cat:"Dentition"},
+{q:"Premolars are significantly smaller mesiodistally compared to:",opts:["The permanent incisors","The primary molars they replace","The adjacent canines","The second permanent molars"],ans:1,cat:"Dentition"},
+{q:"Eruptive tooth movement usually begins when:",opts:["Crown formation completes","1/3 of root forms","2/3 of root forms","Root apex closes"],ans:2,cat:"Dentition"},
+{q:"Reverse overjet is a feature of:",opts:["Class I","Class II","Class III","Normal occlusion"],ans:2,cat:"Dentition"},
+{q:"The ideal curve of Spee should not exceed:",opts:["0.5 mm","1.0 mm","1.5 mm","2.0 mm"],ans:2,cat:"Dentition"},
+{q:"Natal teeth are:",opts:["Teeth that erupt after 6 months","Teeth present at birth","Teeth erupting in the first month","Supernumerary teeth only"],ans:1,cat:"Dentition"},
+{q:"Incisal liability in the maxillary arch is approximately:",opts:["3.0 mm","4.0 mm","6.0 mm","7.6 mm"],ans:3,cat:"Dentition"},
+{q:"The space mesial to upper canine and distal to lower canine is called:",opts:["Generalized space","Occlusal space","Primate (anthropoid) space","Lateral space"],ans:2,cat:"Dentition"},
+{q:"Second molars develop in what orientation before eruption?",opts:["Distal and buccal","Mesial and lingual","Vertical","Horizontal"],ans:1,cat:"Dentition"},
+{q:"Adult occlusal equilibrium begins after:",opts:["Crown formation","Canine eruption","Pubertal growth completion","Premolar eruption"],ans:2,cat:"Dentition"},
+{q:"Deep bite is defined as:",opts:["Increased vertical overlap (>4 mm)","Decreased overlap","Edge-to-edge contact","Posterior open bite"],ans:0,cat:"Dentition"},
+{q:"Patients with open bite or large overjet may have difficulty with:",opts:["Swallowing","Speaking","Incising food","Sleeping"],ans:2,cat:"Dentition"},
+{q:"The usual sequence of eruption of deciduous teeth is:",opts:["A B C D E","A B D C E","B A D E C","D C B A E"],ans:1,cat:"Dentition"},
+{q:"The rate-limiting factor in pre-emergent eruption is:",opts:["Root formation","Alveolar bone height","Resorption of bone and primary teeth","PDL contractility"],ans:2,cat:"Dentition"},
+{q:"Overbite measures:",opts:["Horizontal overlap","Vertical overlap","Transverse relationship","Skeletal divergence"],ans:1,cat:"Dentition"},
+{q:"Structural balance refers to harmony between:",opts:["Teeth only","Skeletal and soft tissue structures","Enamel and dentin","Tooth and gingiva only"],ans:1,cat:"Dentition"},
+
+// ── ORTHODONTICS ──
+{q:"Using a space maintainer after premature loss of deciduous teeth is an example of:",opts:["Corrective orthodontics","Interceptive orthodontics","Preventive orthodontics","Restorative dentistry"],ans:2,cat:"Orthodontics"},
+{q:"Planning serial extraction is an example of:",opts:["Preventive treatment","Corrective treatment","Interceptive treatment","Surgical treatment"],ans:2,cat:"Orthodontics"},
+{q:"Corrective orthodontics involves:",opts:["Diagnosis and treatment of existing malocclusion","Maintaining space","Extraction of teeth","Tongue thrust correction only"],ans:0,cat:"Orthodontics"},
+{q:"In mandibular posterior teeth, the lingual crown inclination:",opts:["Decreases from canine to second molar","Increases from canine to second molar","Remains constant","Is absent"],ans:1,cat:"Orthodontics"},
+{q:"Which permanent teeth are most commonly seen to develop in an aberrant developmental position?",opts:["Upper lateral incisors and lower canines","Upper canines, lower third molars, upper central incisors, and lower lateral incisors","Upper premolars and lower premolars","Upper third molars and lower central incisors"],ans:1,cat:"Orthodontics"},
+{q:"Which type of tooth movement is most predictably achieved using a removable orthodontic appliance?",opts:["Torque control of anterior teeth","Tipping of individual teeth","Intrusion of posterior segments","En-masse retraction with anchorage control"],ans:1,cat:"Orthodontics"},
+{q:"A case requiring precise 3D control of root position is:",opts:["Ideal for Z-spring use","Contraindicated for ROA","Managed by screw activation","Corrected with block movement"],ans:1,cat:"Orthodontics"},
+{q:"Trauma causing aberrant developmental position most commonly affects which tooth?",opts:["Upper canine","Lower lateral incisor","Upper central incisor","Lower central incisor"],ans:2,cat:"Orthodontics"},
+{q:"Failure of eruption of a permanent incisor following trauma to the primary predecessor is mainly due to:",opts:["Delayed root formation","Dilaceration of the root","Ankylosis of the crown","Loss of alveolar bone"],ans:1,cat:"Orthodontics"},
+{q:"Which supernumerary tooth type is most commonly associated with a wide upper median diastema?",opts:["Supplemental","Tuberculate","Conical (mesiodens)","Fused"],ans:2,cat:"Orthodontics"},
+{q:"Which supernumerary tooth type most commonly delays eruption of permanent upper central incisors?",opts:["Supplemental","Tuberculate","Peg-shaped","Fused"],ans:1,cat:"Orthodontics"},
+{q:"Palatal malposition of an unerupted maxillary canine is usually:",opts:["Caused by space deficiency","Prevented by alveolar bone depth","Influenced by crowding","Due to early root completion"],ans:1,cat:"Orthodontics"},
+{q:"Which teeth are most commonly missing in hypodontia after third molars?",opts:["Upper canines","Lower incisors","Second premolars","First premolars"],ans:2,cat:"Orthodontics"},
+{q:"Early removal of tuberculate supernumerary teeth is recommended primarily to prevent:",opts:["Enamel hypoplasia","Reduction in vertical dento-alveolar development","Ankylosis of permanent incisors","Premature eruption of lateral incisors"],ans:1,cat:"Orthodontics"},
+{q:"Which tooth offers increased resistance to mesial movement due to its anatomic position?",opts:["Maxillary canine","Mandibular first molar","Mandibular second premolar","Maxillary lateral incisor"],ans:2,cat:"Orthodontics"},
+{q:"Which of the following best differentiates orthopedic forces from orthodontic forces?",opts:["Orthopedic forces act only on teeth","Orthodontic forces are heavier","Orthopedic forces act on basal bone and modify growth","Orthodontic forces produce skeletal changes"],ans:2,cat:"Orthodontics"},
+{q:"Functional appliances are ineffective for:",opts:["Growth modification","Muscle training","Precise tooth movement","Overjet reduction"],ans:2,cat:"Orthodontics"},
+
+// ── BIOMECHANICS & FORCES ──
+{q:"In orthodontics, the center of resistance of a single-rooted tooth with normal alveolar bone level is located at:",opts:["At the root apex","At the furcation area","At one-half the root length from the CEJ","At about one-third distance from the CEJ to the root apex"],ans:3,cat:"Biomechanics"},
+{q:"Which structure is classified as an extra-oral source of anchorage?",opts:["Alveolar bone","Basal bone of hard palate","Mandibular lingual alveolar bone","Occipital region"],ans:3,cat:"Biomechanics"},
+{q:"Orthodontic appliance is primarily defined as a device that:",opts:["Corrects only dental malposition","Produces skeletal changes only","Creates and/or transmits forces to teeth and/or skeletal units to achieve functional, structural and esthetic goals","Maintains space after extraction only"],ans:2,cat:"Biomechanics"},
+{q:"According to working classification, orthodontic appliances include all EXCEPT:",opts:["Removable appliances","Fixed appliances","Orthopedic appliances","Myofascial surgical appliances"],ans:3,cat:"Biomechanics"},
+{q:"Which root form provides maximum anchorage potential?",opts:["Round root","Flat root","Conical root","Triangular root"],ans:3,cat:"Biomechanics"},
+{q:"In controlled tipping, the center of rotation is located at the:",opts:["Center of resistance","Cervical third of the root","Root apex","Incisal edge"],ans:2,cat:"Biomechanics"},
+{q:"Which statement correctly describes the effect of a force acting through the center of resistance?",opts:["It causes uncontrolled tipping","It produces rotation around the apex","It results in bodily (translational) movement","It generates a couple without translation"],ans:2,cat:"Biomechanics"},
+{q:"In simple anchorage, the combined root surface area of anchor teeth should ideally be:",opts:["Equal to the teeth being moved","Half that of the teeth being moved","Two times that of the teeth being moved","Independent of the teeth being moved"],ans:2,cat:"Biomechanics"},
+{q:"Which of the following best describes an active orthodontic appliance?",opts:["Maintains tooth position after treatment","Produces tooth movement by incorporating or transmitting active forces","Cannot be removable","Does not involve muscular forces"],ans:1,cat:"Biomechanics"},
+{q:"When a force does not pass through the center of resistance, the resulting tendency of the tooth to rotate is termed:",opts:["Translation","Torque","Center of rotation","Moment"],ans:3,cat:"Biomechanics"},
+{q:"In controlled tipping, the center of rotation of the tooth is located at the:",opts:["Center of resistance","Root apex","Incisal edge","Furcation"],ans:1,cat:"Biomechanics"},
+{q:"Which anchorage type utilizes resistance of anchor teeth to bodily movement to move other teeth?",opts:["Simple anchorage","Reciprocal anchorage","Stationary anchorage","Reinforced anchorage"],ans:2,cat:"Biomechanics"},
+{q:"A space maintainer is classified as:",opts:["Active removable appliance","Passive appliance","Functional appliance","Orthopedic appliance"],ans:1,cat:"Biomechanics"},
+{q:"Standard activation of a mid-palatal expansion screw per quarter turn is:",opts:["0.1 mm","0.2–0.25 mm","0.5 mm","1 mm"],ans:1,cat:"Biomechanics"},
+{q:"The main biomechanical advantage of increasing wire length in a spring is:",opts:["Increased force magnitude","Increased stiffness","Decreased flexibility","Decreased force magnitude"],ans:3,cat:"Biomechanics"},
+{q:"Reciprocal anchorage is best described as:",opts:["Use of extra-oral structures to resist tooth movement","Resistance offered by two mal-posed units moving each other toward normal occlusion","Anchorage reinforced by trans-palatal arch","Anchorage derived from musculature"],ans:1,cat:"Biomechanics"},
+{q:"The moment of force (Mf) is mathematically expressed as:",opts:["Mf = Force ÷ Distance","Mf = Distance ÷ Force","Mf = Force × Distance","Mf = Force² × Distance"],ans:2,cat:"Biomechanics"},
+{q:"Removable orthodontic appliances:",opts:["Are always passive","Are always active","Can be either active or passive","Cannot contain springs"],ans:2,cat:"Biomechanics"},
+{q:"Which statement reflects proper anchorage control as a biologic requirement?",opts:["Anchor units should remain stable","Teeth should move randomly","Growth should be inhibited","Forces should be intermittent only"],ans:0,cat:"Biomechanics"},
+{q:"In stainless steel springs, increasing wire diameter will:",opts:["Increase flexibility","Decrease force magnitude","Significantly increase force magnitude","Reduce springback"],ans:2,cat:"Biomechanics"},
+{q:"Which orthodontic tooth movement is characterized by a center of rotation at infinity?",opts:["Controlled tipping","Rotation","Bodily movement","Root uprighting"],ans:2,cat:"Biomechanics"},
+{q:"Fixed orthodontic appliances apply forces to teeth via:",opts:["Acrylic plates","Functional matrix only","Arch wires or auxiliaries through bonded attachments","Patient's tongue pressure"],ans:2,cat:"Biomechanics"},
+{q:"A couple in orthodontic biomechanics is best defined as:",opts:["Two unequal forces acting in opposite directions","Two equal and opposite forces with parallel but non-collinear lines of action","A force acting through the center of resistance","A force producing pure translation"],ans:1,cat:"Biomechanics"},
+{q:"The optimal magnitude of force for skeletal effects with orthopedic appliances is:",opts:["50–100 g","100–200 g","200–300 g","400–600 g"],ans:3,cat:"Biomechanics"},
+{q:"The ideal line of force in orthopedic therapy should pass through:",opts:["Apex of teeth","Occlusal plane","Center of resistance of skeletal structure","Gingival margin"],ans:2,cat:"Biomechanics"},
+
+// ── APPLIANCES ──
+{q:"Acrylic baseplate contributes to anchorage by:",opts:["Delivering active force","Engaging proximal undercuts","Distributing reactive forces","Increasing tipping efficiency"],ans:2,cat:"Appliances"},
+{q:"Which clasp is considered the most retentive and versatile in ROA?",opts:["Ball-end clasp","Southend clasp","Circumferential clasp","Adams clasp"],ans:3,cat:"Appliances"},
+{q:"Daily replacement of intraoral elastics is necessary to:",opts:["Prevent corrosion","Maintain consistent force","Increase anchorage","Reduce activation"],ans:1,cat:"Appliances"},
+{q:"Which is a clinical advantage of screws over springs?",opts:["Deliver continuous physiologic force","Patient-controlled activation","More suitable for root torque","Less dependent on compliance"],ans:1,cat:"Appliances"},
+{q:"The primary indication for an anterior bite plane in an upper ROA is:",opts:["Deep bite correction via posterior eruption","Crossbite correction","Transverse expansion","Molar distalization"],ans:0,cat:"Appliances"},
+{q:"Self-cure acrylic compared to heat-cure acrylic is:",opts:["More durable","Better polymerized","Faster to fabricate","Less repairable"],ans:2,cat:"Appliances"},
+{q:"Which of the following is NOT a mechanical requirement of an ideal appliance?",opts:["Withstanding masticatory forces","Easy fabrication and activation","Universally applicable","Biocompatibility of materials"],ans:3,cat:"Appliances"},
+{q:"The design of a removable appliance should:",opts:["Be delegated entirely to laboratory","Be based solely on cast analysis","Be based on clinical objectives","Follow standard template"],ans:2,cat:"Appliances"},
+{q:"The most common wire diameter used for Adams clasp is:",opts:["0.5 mm","0.6 mm","0.7 mm","0.9 mm"],ans:2,cat:"Appliances"},
+{q:"Lingual appliances fulfill esthetic requirements but may violate which biologic requirement?",opts:["Continuous force delivery","Non-interference with normal functions (speech)","Biocompatibility","Growth preservation"],ans:1,cat:"Appliances"},
+{q:"Lip bumper appliance enhances anchorage by utilizing:",opts:["Hypotonic masticatory muscles","Hypertonic labial musculature","Tongue pressure","Basal bone resistance"],ans:1,cat:"Appliances"},
+{q:"The lip bumper appliance is classified as:",opts:["Pure removable appliance","Pure fixed appliance","Functional appliance","Semi-fixed / fixed-removable combination appliance"],ans:3,cat:"Appliances"},
+{q:"Soldering differs from welding because soldering:",opts:["Uses no filler metal","Uses silver solder and flux","Is stronger than welding","Requires no oxidation control"],ans:1,cat:"Appliances"},
+{q:"Optimal posterior disocclusion produced by bite plane thickness should be:",opts:["<0.5 mm","0.5–1 mm","1–2 mm",">5 mm"],ans:2,cat:"Appliances"},
+{q:"Anchorage in ROA is enhanced primarily by:",opts:["Palatal acrylic coverage","Increasing screw activation","Reducing clasp number","Using elastics only"],ans:0,cat:"Appliances"},
+{q:"A major limitation of ROA compared to fixed appliances is:",opts:["Excessive enamel decalcification","Strong anchorage control","Limited anchorage control","High cost"],ans:2,cat:"Appliances"},
+{q:"Active removable appliances achieve tooth movement primarily through:",opts:["Heavy orthopedic forces","Circumoral musculature only","Springs, bows, and expansion screws","Cemented brackets"],ans:2,cat:"Appliances"},
+{q:"An ideal clasp should:",opts:["Apply active orthodontic force","Provide retention without trauma","Engage only one proximal undercut","Be limited to fully erupted teeth"],ans:1,cat:"Appliances"},
+{q:"Use of Class II elastics from maxillary canine to mandibular molar is an example of:",opts:["Intra-maxillary anchorage","Reciprocal anchorage","Simple anchorage","Inter-maxillary anchorage"],ans:3,cat:"Appliances"},
+{q:"A mechanical requirement of an ideal appliance includes:",opts:["Continuous controlled forces of desired intensity","Esthetic invisibility","Growth stimulation","No activation needed"],ans:0,cat:"Appliances"},
+{q:"Posterior bite plane (buccal capping) primarily:",opts:["Reduces deep overbite","Promotes posterior eruption","Eliminates occlusal interferences","Expands transverse dimension"],ans:2,cat:"Appliances"},
+{q:"One major advantage of fixed appliances compared to removable appliances is:",opts:["Better esthetics","No retention problems","Reduced risk of root resorption","Easy cleaning"],ans:1,cat:"Appliances"},
+{q:"The esthetic requirement of an orthodontic appliance means:",opts:["It must be metallic","It should be completely invisible","It should be as inconspicuous as possible","It must be removable"],ans:2,cat:"Appliances"},
+{q:"Which of the following is an example of a passive fixed appliance?",opts:["Lip bumper","Fixed lingual bonded retainer","Expansion screw","Headgear"],ans:1,cat:"Appliances"},
+{q:"Separators are primarily used to:",opts:["Close anterior spacing","Correct crossbite","Create space for band placement","Secure archwire"],ans:2,cat:"Appliances"},
+{q:"Separators are usually left in place for:",opts:["1 day","2–7 days","2 weeks","1 month"],ans:1,cat:"Appliances"},
+{q:"The most commonly used archwire during the initial alignment phase is:",opts:["Stainless steel","Gold","Beta-titanium","Nickel-Titanium"],ans:3,cat:"Appliances"},
+{q:"Stainless steel archwire is preferred in the space closure stage because it:",opts:["Delivers superelastic force","Is highly flexible","Has rigid and smooth surface","Has shape memory"],ans:2,cat:"Appliances"},
+{q:"The main reason Nickel-Titanium is preferred in the alignment stage is:",opts:["High rigidity","Smooth surface","Shape memory and flexibility","Low cost"],ans:2,cat:"Appliances"},
+{q:"Elastic chain (E-chain) is mainly used for:",opts:["Securing archwire","Space closure","Root uprighting","Anchorage reinforcement"],ans:1,cat:"Appliances"},
+{q:"Elastic ligatures are mainly used to:",opts:["Close spaces","Engage elastics","Secure archwire into bracket","Open space"],ans:2,cat:"Appliances"},
+{q:"An open coil spring is mainly used to:",opts:["Close extraction space","De-rotate teeth","Open space between teeth","Intrude incisors"],ans:2,cat:"Appliances"},
+{q:"A closed coil spring is used to:",opts:["Open diastema","Close space","Correct torque","Correct crossbite"],ans:1,cat:"Appliances"},
+{q:"Torquing springs primarily move the root in:",opts:["Mesial direction","Distal direction","Vertical direction","Labial or lingual direction"],ans:3,cat:"Appliances"},
+{q:"Excessive orthodontic force during fixed appliance therapy may result in:",opts:["Faster alignment","Improved periodontal support","Damage to supporting structures","Increased esthetics"],ans:2,cat:"Appliances"},
+{q:"Which of the following is considered an ACTIVE component in fixed appliances?",opts:["Bracket","Band","Lingual sheath","Archwire"],ans:3,cat:"Appliances"},
+{q:"Which of the following is NOT a passive component in fixed appliances?",opts:["Band","Bracket","Buccal tube","Archwire"],ans:3,cat:"Appliances"},
+{q:"Headgear primarily acts by:",opts:["Increasing mandibular growth","Distalizing mandibular molars","Restricting maxillary growth","Expanding maxilla transversely"],ans:2,cat:"Appliances"},
+{q:"Which component of headgear delivers force to the teeth?",opts:["Outer bow","Inner bow","Junction","Anchor unit"],ans:1,cat:"Appliances"},
+{q:"The main advantage of springs over elastics in headgear is:",opts:["Greater esthetics","Lower cost","Constant force delivery","Less patient compliance needed"],ans:2,cat:"Appliances"},
+{q:"Cervical pull headgear produces:",opts:["Intrusion of molars","Mesial movement of maxilla","Distal and inferior force","Pure vertical force"],ans:2,cat:"Appliances"},
+{q:"A major contraindication of cervical pull headgear is:",opts:["Deep bite","Low mandibular plane angle","Open bite","Short lower face height"],ans:2,cat:"Appliances"},
+{q:"High-pull headgear is mainly indicated in:",opts:["Deep bite","Vertical maxillary excess","Mandibular deficiency","Crossbite"],ans:1,cat:"Appliances"},
+{q:"Occipital pull headgear produces which effect?",opts:["Extrusion of molars","Distalization with intrusion","Mesial movement of maxilla","Mandibular advancement"],ans:1,cat:"Appliances"},
+{q:"Combination headgear has which main disadvantage?",opts:["Ineffective force delivery","Increased dental side effects","Poor skeletal response","Reduced patient compliance"],ans:3,cat:"Appliances"},
+{q:"Protraction face mask is mainly used for:",opts:["Class II due to mandibular deficiency","Class I crowding","Class III with maxillary deficiency","Open bite correction"],ans:2,cat:"Appliances"},
+{q:"FR-III appliance is indicated for:",opts:["Class I malocclusion","Class II division 1","Class II division 2","Class III malocclusion"],ans:3,cat:"Appliances"},
+{q:"Frankel appliance primarily acts by:",opts:["Tooth movement","Soft tissue regulation","Extraction therapy","Fixed mechanotherapy"],ans:1,cat:"Appliances"},
+{q:"The Herbst appliance differs from removable functional appliances because it:",opts:["Is removable","Requires high patient compliance","Provides intermittent force","Produces continuous mandibular advancement"],ans:3,cat:"Appliances"},
+{q:"A disadvantage of Herbst appliance is:",opts:["Requires high compliance","No skeletal effect","Risk of mechanical failure","Limited mandibular advancement"],ans:2,cat:"Appliances"},
+{q:"The angle of inclined planes in Twin Block is approximately:",opts:["30°","45°","60°","70°"],ans:3,cat:"Appliances"},
+{q:"Twin Block allows better compliance because:",opts:["It is smaller","It is fixed","It allows full-time wear and better speech","It requires no bite registration"],ans:2,cat:"Appliances"},
+{q:"Twin Block appliance consists of:",opts:["Single acrylic block","Two separate bite plates","Only wire framework","Only acrylic shield"],ans:1,cat:"Appliances"},
+{q:"In activator construction bite, the mandible is usually advanced:",opts:["1–2 mm","2–3 mm","5–7 mm or edge-to-edge","8–10 mm"],ans:2,cat:"Appliances"},
+{q:"Which of the following is a contraindication for activator use?",opts:["Class II division 1","Deep bite","Crowded arch","Mixed dentition"],ans:2,cat:"Appliances"},
+{q:"The most critical step in activator fabrication is:",opts:["Wire bending","Acrylic trimming","Bite registration","Polishing"],ans:2,cat:"Appliances"},
+{q:"The Herbst appliance consists of:",opts:["Acrylic plates","Elastics","Telescopic tube and plunger","Biteplanes only"],ans:2,cat:"Appliances"},
+{q:"The Bionator differs from activator mainly by:",opts:["Increased acrylic bulk","Reduced acrylic bulk","Being fixed","Being tissue-borne"],ans:1,cat:"Appliances"},
+{q:"Lip bumper works by:",opts:["Direct force on incisors","Altering muscle equilibrium","Expanding maxilla","Intruding molars"],ans:1,cat:"Appliances"},
+{q:"A key function of lip bumper is:",opts:["Intrusion of incisors","Space gaining in lower arch","Retraction of maxilla","Expansion of palate"],ans:1,cat:"Appliances"},
+{q:"Increasing wear duration of orthopedic appliances beyond 16 hours/day while reducing force magnitude results primarily in:",opts:["Skeletal changes","Sutural remodeling","Dental changes","Bone apposition"],ans:2,cat:"Appliances"},
+{q:"The most favorable timing for orthopedic appliance wear is:",opts:["Morning hours","Afternoon hours","Evening and night","Continuous 24 hours"],ans:2,cat:"Appliances"},
+{q:"Orthopedic treatment is most effective during:",opts:["Adulthood","Late adolescence","Post-pubertal stage","Prepubertal growth spurt"],ans:3,cat:"Appliances"},
+{q:"Oral screen is primarily used for:",opts:["Skeletal correction","Tooth alignment","Habit breaking","Space closure"],ans:2,cat:"Appliances"},
+{q:"In magnets used in orthodontics, repulsion mode is used for:",opts:["Space closure","Anchorage reinforcement","Regaining lost space","Torque control"],ans:2,cat:"Appliances"},
+{q:"Which structure provides anchorage in extraoral orthopedic appliances?",opts:["Periodontal ligament","Teeth only","Maxillary sinus","Cranial bones (occipital/parietal)"],ans:3,cat:"Appliances"},
+{q:"Elastics used between upper and lower arches to correct molar relationship are classified as:",opts:["Intra-arch elastics","Extra-oral elastics","Inter-arch elastics","Elastic chains"],ans:2,cat:"Appliances"},
+{q:"Which fibers reorganize most rapidly following orthodontic tooth movement?",opts:["Gingival fibers","Supra-alveolar fibers","Periodontal principal fibers","Transseptal fibers"],ans:2,cat:"Appliances"},
+{q:"Supra-alveolar gingival fibers may require approximately how long to reorganize?",opts:["2 weeks","8 weeks","20 weeks","40 weeks"],ans:3,cat:"Appliances"},
+
+// ── RETENTION & RELAPSE ──
+{q:"Which type of orthodontic force decays to zero or near zero magnitude before the next appointment?",opts:["Continuous force","Interrupted force","Intermittent force","Optimal force"],ans:2,cat:"Retention"},
+{q:"Pericision reduces rotational relapse approximately by:",opts:["10%","20%","30%","50%"],ans:2,cat:"Retention"},
+{q:"The highest relapse tendency after orthodontic treatment is associated with correction of:",opts:["Intrusion","Extrusion","Rotation","Tipping"],ans:2,cat:"Retention"},
+{q:"After closure of a midline diastema, the recommended retainer is:",opts:["Hawley retainer","Positioner appliance","Fixed bonded retainer from canine to canine (palatal)","Functional appliance"],ans:2,cat:"Retention"},
+{q:"Relapse in orthodontics is defined as:",opts:["Return of the corrected malocclusion features after treatment","Failure of orthodontic appliances","Development of new malocclusion after treatment","Failure of retention appliances"],ans:0,cat:"Retention"},
+{q:"Hawley retainer disadvantage is:",opts:["Cannot control overbite","Cannot be used in mandible","Susceptibility to fracture or loss","Cannot be adjusted"],ans:2,cat:"Retention"},
+{q:"An advantage of Hawley retainer is:",opts:["Excellent aesthetics","Possibility of minor tooth movement","Completely invisible","Permanent fixation"],ans:1,cat:"Retention"},
+{q:"Clear retainers are fabricated from:",opts:["Acrylic resin","Stainless steel","Transparent thermoplastic material","Elastomeric material"],ans:2,cat:"Retention"},
+{q:"Clear plastic retainers should not be worn while drinking because:",opts:["They fracture easily","They absorb fluids","Cariogenic drinks may cause decalcification","They become discolored"],ans:2,cat:"Retention"},
+{q:"Which component of Hawley retainer allows adjustment?",opts:["Adams clasp","Acrylic base plate","U-loop in labial bow","C clasp"],ans:2,cat:"Retention"},
+{q:"The labial bow of Hawley retainer extends from:",opts:["Incisor to incisor","Premolar to premolar","Canine to canine","Molar to molar"],ans:2,cat:"Retention"},
+{q:"Begg's retainer consists mainly of:",opts:["Lingual arch wire","Labial bow extending to last molar","Bonded wire","Plastic aligner"],ans:1,cat:"Retention"},
+{q:"Clip-on retainer is indicated primarily for:",opts:["Retention of lower anterior teeth","Upper molar correction","Posterior crossbite","Open bite"],ans:0,cat:"Retention"},
+{q:"Circumferential supracrestal fibrotomy (pericision) is primarily used to prevent relapse after:",opts:["Deep bite correction","Rotation correction","Crossbite correction","Open bite correction"],ans:1,cat:"Retention"},
+{q:"Post-treatment tooth position changes may occur due to:",opts:["Orthodontic mechanics only","Age-related changes unrelated to treatment","Pulpal necrosis","Loss of enamel"],ans:1,cat:"Retention"},
+{q:"Interproximal reduction improves orthodontic stability mainly by:",opts:["Increasing enamel hardness","Flattening interdental contacts and relieving minor crowding","Increasing arch width","Stimulating periodontal ligament regeneration"],ans:1,cat:"Retention"},
+{q:"Kesling tooth positioner covers:",opts:["Only incisors","Only molars","Entire crowns of maxillary and mandibular teeth","Only anterior teeth"],ans:2,cat:"Retention"},
+{q:"In Class III malocclusion treated early, retention should be maintained:",opts:["Until tooth eruption completes","Until periodontal ligament reorganization occurs","Until cessation of mandibular growth","For 6 months only"],ans:2,cat:"Retention"},
+{q:"Wrap-around retainer differs from clip-on retainer because it:",opts:["Covers only incisors","Covers all teeth","Is fixed","Has no acrylic"],ans:1,cat:"Retention"},
+{q:"According to Reidel's classification, no retention is required in:",opts:["Severe rotated teeth","Generalized spacing cases","Posterior crossbite with proper axial inclination after correction","Deep bite cases"],ans:2,cat:"Retention"},
+{q:"Retention after early correction of Class III malocclusion should continue:",opts:["6 months","1 year","Until growth cessation","Until eruption of third molars"],ans:2,cat:"Retention"},
+{q:"Which of the following habits is considered an important occlusal cause of relapse?",opts:["Tongue thrusting only","Nail biting and lip biting","Mouth breathing only","Thumb sucking only"],ans:1,cat:"Retention"},
+{q:"Which of the following cases typically requires limited retention?",opts:["Severe rotation","Mandibular expansion cases","Class I non-extraction cases with maxillary incisor spacing","Diastema between maxillary central incisors"],ans:2,cat:"Retention"},
+{q:"Which of the following cases usually requires permanent or semi-permanent retention?",opts:["Posterior crossbite correction","Serial extraction cases","Severe labio-lingual malposition","Early treatment of rotations"],ans:2,cat:"Retention"},
+{q:"Which of the following is NOT a removable retainer?",opts:["Hawley retainer","Begg retainer","Clip-on retainer","Bonded canine-to-canine retainer"],ans:3,cat:"Retention"},
+{q:"Limited retention is indicated for:",opts:["Severe rotations","Class I non-extraction cases with spacing and protrusion","Generalized spacing","Mandibular expansion"],ans:1,cat:"Retention"},
+{q:"Permanent retention is recommended in:",opts:["Posterior crossbite correction","Severe labio-lingual malposition","Serial extraction cases","Crossbite correction"],ans:1,cat:"Retention"},
+{q:"Which of the following occlusal conditions increases post-treatment stability?",opts:["Centric relation–centric occlusion slide greater than 4 mm","Absence of intercuspation","Coincidence of centric relation and centric occlusion","Presence of parafunctional habits"],ans:2,cat:"Retention"},
+{q:"The acceptable slide from centric relation to centric occlusion should not exceed:",opts:["0.5 mm","1 mm","1.5–2 mm","3–4 mm"],ans:2,cat:"Retention"},
+];
+
+let session=[], current=0, score=0, sessionWrong=[], wrongBank=[], answered=false;
+
+function counts(){
+  const cats=['Growth','Dentition','Orthodontics','Biomechanics','Appliances','Retention'];
+  document.getElementById('cnt-all').textContent=ALL_Q.length+' Q';
+  cats.forEach(c=>{
+    const el=document.getElementById('cnt-'+c);
+    if(el) el.textContent=ALL_Q.filter(q=>q.cat===c).length+' Q';
+  });
+}
+
+function showHome(){
+  document.getElementById('home').style.display='';
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('summary').style.display='none';
+  document.getElementById('savant-screen').style.display='none';
+  document.getElementById('mode-badge').textContent='Home';
+  updateWrongCard(); counts();
+}
+
+function updateWrongCard(){
+  const wc=document.getElementById('wrong-card');
+  document.getElementById('cnt-wrong').textContent=wrongBank.length+' Q';
+  wrongBank.length>0?wc.classList.remove('disabled'):wc.classList.add('disabled');
+}
+
+function shuffle(arr){return [...arr].sort(()=>Math.random()-0.5);}
+
+function startMode(mode){
+  let src;
+  if(mode==='all') src=ALL_Q;
+  else if(mode==='wrong') src=wrongBank;
+  else src=ALL_Q.filter(q=>q.cat===mode);
+  session=shuffle(src); current=0; score=0; sessionWrong=[]; answered=false;
+  const labels={all:'All Topics',wrong:'Retry Wrong',Growth:'Growth & Dev.',Dentition:'Dentition',Orthodontics:'Orthodontics',Biomechanics:'Biomechanics',Appliances:'Appliances',Retention:'Retention'};
+  document.getElementById('mode-badge').textContent=labels[mode]||mode;
+  document.getElementById('home').style.display='none';
+  document.getElementById('summary').style.display='none';
+  document.getElementById('savant-screen').style.display='none';
+  document.getElementById('quiz').style.display='';
+  renderQ();
+}
+
+function renderQ(){
+  if(current>=session.length){showSummary();return;}
+  const q=session[current];
+  const pct=Math.round((current/session.length)*100);
+  document.getElementById('quiz').innerHTML=`
+    <div class="stats-row">
+      <div class="stat-pill">Q <strong>${current+1}/${session.length}</strong></div>
+      <div class="stat-pill green">✓ <strong>${score}</strong></div>
+      <div class="stat-pill red">✗ <strong>${sessionWrong.length}</strong></div>
+      <div class="stat-pill" style="margin-left:auto;cursor:pointer" onclick="showHome()">← Home</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="q-cat-tag tag-${q.cat}">${q.cat}</span>
+        <span class="q-num">${current+1} / ${session.length}</span>
+      </div>
+      <p class="q-text">${q.q}</p>
+      <div class="options" id="opts">
+        ${q.opts.map((o,i)=>`
+          <button class="opt-btn" id="opt${i}" onclick="pick(${i})">
+            <span class="opt-letter">${String.fromCharCode(65+i)}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div id="fb"></div>
+      <div class="actions" id="acts">
+        <button class="btn ghost" onclick="pick(-1)">Skip</button>
+      </div>
+    </div>`;
+}
+
+function pick(i){
+  if(answered)return; answered=true;
+  const q=session[current];
+  document.querySelectorAll('.opt-btn').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('fb');
+  if(i===q.ans){
+    score++;
+    document.getElementById('opt'+i).classList.add('correct');
+    fb.innerHTML=`<div class="feedback-box correct"><span class="fb-icon">✓</span><span>Correct!</span></div>`;
+  } else {
+    if(i>=0) document.getElementById('opt'+i).classList.add('wrong');
+    document.getElementById('opt'+q.ans).classList.add('reveal');
+    sessionWrong.push(q);
+    fb.innerHTML=`<div class="feedback-box wrong"><span class="fb-icon">✗</span><span>Correct answer: <strong>${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}</strong></span></div>`;
+  }
+  document.getElementById('acts').innerHTML=`<button class="btn primary" onclick="nextQ()">Next →</button>`;
+}
+
+function nextQ(){answered=false;current++;renderQ();}
+
+function showSummary(){
+  wrongBank=[...new Set([...wrongBank,...sessionWrong])];
+  updateWrongCard();
+  const total=session.length, pct=Math.round((score/total)*100);
+  const cls=pct>=80?'good':pct>=60?'mid':'low';
+  const msg=pct>=80?'🏆 Excellent!':pct>=60?'📈 Good progress!':'💪 Keep drilling!';
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('summary').style.display='';
+  document.getElementById('summary').innerHTML=`
+    <div class="q-card" style="text-align:center;padding:2.5rem 1.75rem">
+      <div class="score-big ${cls}">${pct}%</div>
+      <p class="score-sub">${msg} — ${score} correct out of ${total}</p>
+    </div>
+    <div class="summary-stats">
+      <div class="sum-stat green"><div class="num">${score}</div><div class="lbl">Correct</div></div>
+      <div class="sum-stat red"><div class="num">${total-score}</div><div class="lbl">Wrong</div></div>
+      <div class="sum-stat blue"><div class="num">${pct}%</div><div class="lbl">Score</div></div>
+    </div>
+    <div class="summary-actions">
+      ${sessionWrong.length>0?`<button class="btn danger" onclick="retryWrong()">🔁 Retry wrong answers (${sessionWrong.length})</button>`:''}
+      <button class="btn primary" onclick="restartSession()">↻ Restart same set</button>
+      <button class="btn ghost" onclick="showHome()">← Back to home</button>
+    </div>
+    ${sessionWrong.length>0?`
+    <div class="wrong-list">
+      <div class="wrong-list-header">Questions you missed</div>
+      ${sessionWrong.map(q=>`
+        <div class="wrong-item">
+          <div class="wi-q">${q.q}</div>
+          <div class="wi-a">✓ ${q.opts[q.ans]}</div>
+        </div>`).join('')}
+    </div>`:''}`;
+}
+
+function retryWrong(){
+  session=shuffle([...sessionWrong]);
+  current=0;score=0;sessionWrong=[];answered=false;
+  document.getElementById('summary').style.display='none';
+  document.getElementById('quiz').style.display='';
+  renderQ();
+}
+function restartSession(){
+  session=shuffle(session);current=0;score=0;sessionWrong=[];answered=false;
+  document.getElementById('summary').style.display='none';
+  document.getElementById('quiz').style.display='';
+  renderQ();
+}
+
+// ── SAVANT AI ──
+let savantHistory=[],savantQs=[],savantIdx=0,savantScore=0;
+
+function showSavant(){
+  document.getElementById('home').style.display='none';
+  document.getElementById('savant-screen').style.display='';
+  document.getElementById('savant-config').style.display='';
+  document.getElementById('savant-chat').style.display='none';
+  document.getElementById('mode-badge').textContent='Savant AI';
+}
+
+function startSavant(){
+  const topic=document.getElementById('sav-topic').value;
+  const count=parseInt(document.getElementById('sav-count').value);
+  let pool=topic==='all'?ALL_Q:ALL_Q.filter(q=>q.cat===topic);
+  savantQs=shuffle(pool).slice(0,count);
+  savantIdx=0;savantScore=0;savantHistory=[];
+  document.getElementById('savant-config').style.display='none';
+  document.getElementById('savant-chat').style.display='';
+  document.getElementById('chat-msgs').innerHTML='';
+  addMsg('system',`Starting ${count}-question session — ${topic==='all'?'All Topics':topic}`);
+  askNextSavant();
+}
+
+function askNextSavant(){
+  if(savantIdx>=savantQs.length){endSavant();return;}
+  const q=savantQs[savantIdx];
+  savantHistory.push({role:'user',content:`Present this question now. Question ${savantIdx+1}/${savantQs.length}: "${q.q}". Options: ${q.opts.map((o,i)=>String.fromCharCode(65+i)+'. '+o).join('; ')}. Correct answer (do not reveal yet): ${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}`});
+  const sys=`You are OrthoQuiz Savant, an expert orthodontics exam tutor. Ask questions one at a time, wait for the student's answer, then give a 2-3 sentence clinical explanation. Be encouraging. Never reveal the answer before the student responds.`;
+  callClaude(sys,savantHistory,(text)=>{
+    addMsg('ai',text);
+    savantHistory.push({role:'assistant',content:text});
+  });
+}
+
+async function sendChat(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim(); if(!text)return;
+  input.value=''; addMsg('user',text);
+  const q=savantQs[savantIdx];
+  const correct=String.fromCharCode(65+q.ans);
+  const isCorrect=text.toUpperCase().trim().charAt(0)===correct;
+  if(isCorrect) savantScore++;
+  savantIdx++;
+  savantHistory.push({role:'user',content:text});
+  const sys=`You are OrthoQuiz Savant. The student answered "${text}". Correct answer: ${correct}. ${q.opts[q.ans]}. ${isCorrect?'They got it right!':'They got it wrong.'} Give a 2-3 sentence clinical explanation of why the correct answer is correct. Be warm and brief. Do not ask another question.`;
+  callClaude(sys,[{role:'user',content:`Evaluate answer "${text}" for question: "${q.q}". Correct: ${correct}. ${q.opts[q.ans]}`}],(res)=>{
+    addMsg('ai',res);
+    savantHistory.push({role:'assistant',content:res});
+    setTimeout(()=>askNextSavant(),700);
+  });
+}
+
+function endSavant(){
+  const pct=Math.round((savantScore/savantQs.length)*100);
+  const msg=pct>=80?"Outstanding grasp of the material!":pct>=60?"Good session — keep reviewing weak areas.":"Keep drilling — consistency is key!";
+  addMsg('system',`Session complete! ${savantScore}/${savantQs.length} (${pct}%) — ${msg}`);
+  document.querySelector('.chat-input-row').innerHTML=`
+    <button class="btn primary" onclick="startSavant()" style="flex:1;padding:12px">Start another session</button>
+    <button class="btn ghost" onclick="showHome()" style="padding:12px">← Home</button>`;
+}
+
+function addMsg(type,text){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='msg '+type;
+  div.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+}
+
+function showTyping(){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');
+  div.className='typing-indicator';div.id='typing';
+  div.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+function hideTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+
+async function callClaude(system,history,callback){
+  showTyping();
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system,messages:history})
+    });
+    const data=await res.json();
+    hideTyping();
+    const text=data.content?.find(b=>b.type==='text')?.text||'Sorry, could not generate a response.';
+    callback(text);
+  }catch(e){hideTyping();addMsg('system','Connection error. Check your internet and try again.');}
+}
+
+counts(); updateWrongCard();
+</script>
+</body>
+</html>
